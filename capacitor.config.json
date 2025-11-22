@@ -1,0 +1,6 @@
+{
+  "appId": "com.finance.app",
+  "appName": "FinanceTracker",
+  "webDir": "mobile_app",  
+  "bundledWebRuntime": false
+}

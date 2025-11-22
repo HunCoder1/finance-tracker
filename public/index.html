@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. AUTHENTICATION SCREENS -->
+    <div id="auth-container">
+        <div id="login-view" class="auth-card">
+            <h2>Welcome Back</h2>
+            <input type="text" id="login-user" placeholder="Username">
+            <input type="password" id="login-pass" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <p>No account? <span class="link" onclick="showAuth('register')">Create Account</span></p>
+        </div>
+
+        <div id="register-view" class="auth-card hidden">
+            <h2>Create Account</h2>
+            <input type="text" id="reg-user" placeholder="Choose Username">
+            <input type="password" id="reg-pass" placeholder="Choose Password">
+            <button onclick="register()">Sign Up</button>
+            <p><span class="link" onclick="showAuth('login')">Back to Login</span></p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP -->
+    <div id="app-container" class="hidden">
+        
+        <nav>
+            <div class="nav-logo">MyFinance</div>
+            <div class="nav-links">
+                <button onclick="showSection('dashboard')">Dashboard</button>
+                <button onclick="showSection('add')">Add Transaction</button>
+                <button onclick="showSection('debt')">Manage Debts</button>
+                <button onclick="showSection('delete')">Settings</button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <div class="content">
+
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard-section">
+                <div class="filters">
+                    <select id="time-filter" onchange="renderDashboard()">
+                        <option value="daily">Daily View</option>
+                        <option value="weekly">Weekly View</option>
+                        <option value="monthly">Monthly View</option>
+                        <option value="yearly">Yearly View</option>
+                    </select>
+                    <input type="date" id="filter-date" onchange="renderDashboard()">
+                </div>
+
+                <div class="summary-row">
+                    <div class="card income"><h3>Income</h3><p id="sum-income">$0</p></div>
+                    <div class="card expense"><h3>Expense</h3><p id="sum-expense">$0</p></div>
+                    <div class="card balance"><h3>Balance</h3><p id="sum-balance">$0</p></div>
+                </div>
+
+                <div class="table-container">
+                    <table id="data-table">
+                        <thead><tr id="table-head"></tr></thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ADD TRANSACTION SECTION -->
+            <div id="add-section" class="hidden center-box">
+                <div class="card-form">
+                    <h2>Add Transaction</h2>
+                    <select id="t-type">
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    <input type="number" id="t-amount" placeholder="Amount">
+                    <input type="text" id="t-desc" placeholder="Description">
+                    <input type="date" id="t-date">
+                    <button onclick="saveTransaction()">Save & Return</button>
+                </div>
+            </div>
+
+            <!-- MANAGE DEBTS SECTION -->
+            <div id="debt-section" class="hidden center-box">
+                
+                <!-- VIEW 1: LIST -->
+                <div id="debt-list-view" class="debt-container">
+                    <div class="debt-header">
+                        <h2>Active Debts</h2>
+                        <button class="btn-small" onclick="showDebtForm('add')">+ Add New</button>
+                    </div>
+                    <div id="debt-list-items"></div>
+                </div>
+
+                <!-- VIEW 2: ADD FORM -->
+                <div id="debt-add-view" class="card-form hidden">
+                    <h2>Record New Debt</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="debt-dir" value="owed_to_me" checked> They Owe Me</label>
+                        <label><input type="radio" name="debt-dir" value="owed_by_me"> I Owe Them</label>
+                    </div>
+                    <input type="text" id="d-name" placeholder="Person Name">
+                    <input type="number" id="d-amount" placeholder="Amount">
+                    <label>Borrowed On:</label><input type="date" id="d-borrowed">
+                    <label>Due By:</label><input type="date" id="d-due">
+                    <div class="btn-group">
+                        <button onclick="saveNewDebt()">Save Record</button>
+                        <button class="btn-outline" onclick="showDebtForm('list')">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: EDIT/PAY FORM -->
+                <div id="debt-edit-view" class="card-form hidden">
+                    <h2>Update Debt</h2>
+                    <p id="edit-debt-title" style="font-weight:bold; margin-bottom:10px;"></p>
+                    <div style="background:#f8f9fa; padding:10px; margin-bottom:15px;">
+                        <p>Current Balance: <b id="edit-current-bal" style="font-size:18px;">$0</b></p>
+                    </div>
+                    <label>Enter Payment Amount:</label>
+                    <input type="number" id="pay-amount" placeholder="How much paid?">
+                    <input type="hidden" id="edit-debt-id">
+                    <div class="btn-group">
+                        <button onclick="processPayment()">Submit Payment</button>
+                        <button class="btn-outline" onclick="showDebtForm('list')">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELETE / SETTINGS SECTION -->
+            <div id="delete-section" class="hidden center-box">
+                <div class="card-form danger-zone">
+                    <h2>Danger Zone</h2>
+                    <p>Manage your data and account here.</p>
+                    <!-- Buttons now trigger the modal -->
+                    <button class="btn-red" onclick="openDeleteModal('data')">Delete All Data (Reset)</button>
+                    <button class="btn-dark-red" onclick="openDeleteModal('account')">Delete Account Completely</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CONFIRM PASSWORD POPUP MODAL -->
+    <div id="password-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: #dc3545;">Confirm Action</h3>
+            <p>Please enter your password to continue.</p>
+            <input type="password" id="modal-pass" placeholder="Your Password">
+            <div class="btn-group">
+                <button onclick="submitDelete()" class="btn-dark-red">Confirm Delete</button>
+                <button onclick="closeDeleteModal()" class="btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
